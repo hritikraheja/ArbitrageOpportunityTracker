@@ -17,6 +17,7 @@
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.37",
     "numeral": "^2.0.6",
+    "table": "^6.8.0",
     "web3": "^1.7.5"
   },
   "keywords": [],

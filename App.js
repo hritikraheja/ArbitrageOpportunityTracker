@@ -3,10 +3,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const http = require("http");
 const Web3 = require("web3");
+const {table, getBorderCharacters} = require('table')
 const uniswapRouterAbi = require("./abis/UniswapV2Router02.json");
 const sushiswapRouterAbi = require("./abis/SushiSwapRouter.json");
 const { db } = require("./InitialiseFirebase.js");
-const { ref, push, set } = require("firebase/database");
+const { ref, push, set, child, get } = require("firebase/database");
 
 const uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 const sushiswapRouterAddress = "0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f";
@@ -69,7 +70,7 @@ setInterval(async () => {
 
       let entryLog = {
         UniswapPrice : currentUniswapPrice,
-        SushiswapProce : currentSushiswapPrice,
+        SushiswapPrice : currentSushiswapPrice,
         timeStamp : timeString
       }
 
@@ -99,3 +100,31 @@ setInterval(async () => {
     set(newEntryLog, entryLog)
   }
 }, 5000);
+
+app.get('/', (req, res)=> {
+    get(dbRef, "/").then((snaphot) => {
+        if(snaphot.exists()){
+            let entries = []
+            snaphot.forEach((childSnapshot) => {
+                var entry = [
+                    childSnapshot.val().UniswapPrice,
+                    childSnapshot.val().SushiswapPrice,
+                    childSnapshot.val().message,
+                    childSnapshot.val().timeStamp
+                ]
+                entries.push(entry);
+            })
+            res.write('_'.repeat(145) + '\n')
+            res.write("|     Uniswap Price".padEnd(35, ' ') + '|' + "     Sushiswap Price".padEnd(35, ' ') + '|' + "     Message".padEnd(35, ' ') + '|' + "     Timestamp".padEnd(35, ' ') + '|\n')
+            entries.forEach((entry) => {
+                res.write(entry[0].padEnd(30, ' ') + '|' + entry[1].padEnd(30, ' ') + '|' + entry[2].padEnd(30, ' ') + '|' + entry[3].padEnd(30, ' ') + '|\n')
+            })
+            res.write('_'.repeat(145) + '\n')
+            res.end()
+            // let output = table(entries, {border: getBorderCharacters(`ramac`)})
+            // console.log(output)
+        } else {
+            res.write('No Logs Found!')
+        }
+    })
+})
