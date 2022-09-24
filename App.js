@@ -40,6 +40,9 @@ let uniswapPrice;
 let sushiswapPrice;
 const dbRef = ref(db, "priceChangeLogs");
 
+let config = process.env.FIREBASE_CONFIG
+// console.log(config)
+
 setInterval(async () => {
   let uniswapRes = await uniswapRouterContract.methods
     .getAmountsOut(oneEth, [wethContractAddress, daiContractAddress])
